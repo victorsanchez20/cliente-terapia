@@ -1,0 +1,172 @@
+<div class="perfil-page">
+
+  <!-- NAVBAR -->
+  <nav class="topbar">
+    <div class="logo">
+      <i class="fa-solid fa-user-doctor logo-icon"></i>
+      <h2>E-sheba</h2>
+    </div>
+
+    <div class="topbar-right">
+      <p class="greeting">{{ greeting }}, <strong>{{ patient.firstName }}</strong></p>
+
+      <button class="icon-btn" (click)="toggleNotifications()" [class.active]="showNotifications">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notification-dot" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
+
+        <!-- Notification dropdown -->
+        <div class="notif-dropdown" *ngIf="showNotifications" (click)="$event.stopPropagation()">
+          <p class="notif-title">Notificaciones</p>
+          <div class="notif-item" *ngFor="let n of notifications">
+            <div class="notif-dot" [class]="n.type"></div>
+            <div>
+              <p class="notif-msg">{{ n.message }}</p>
+              <p class="notif-time">{{ n.time }}</p>
+            </div>
+          </div>
+        </div>
+      </button>
+
+      <div class="profile-avatar" [title]="patient.firstName + ' ' + patient.lastName">
+        <span>{{ patient.firstName[0] }}{{ patient.lastName[0] }}</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="perfil-content">
+
+    <div class="section-header">
+      <h3 class="section-title">MI PERFIL</h3>
+    </div>
+
+    <!-- PROFILE CARD -->
+    <div class="profile-card">
+      <div class="profile-left">
+
+        <div class="profile-image">
+          <span class="avatar-initials">{{ patient.firstName[0] }}{{ patient.lastName[0] }}</span>
+          <span class="online-dot" [class.offline]="!patient.isOnline"></span>
+        </div>
+
+        <div class="profile-info">
+          <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
+
+          <p class="patient-id">
+            <span class="id-badge">{{ patient.id }}</span>
+            <span class="status-pill" [class.active]="patient.active">
+              {{ patient.active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </p>
+
+          <div class="tags">
+            <span class="tag"><i class="fa-regular fa-calendar"></i>{{ patient.age }} años</span>
+            <span class="tag"><i class="fa-solid fa-phone"></i>{{ patient.phone }}</span>
+            <span class="tag"><i class="fa-solid fa-location-dot"></i>{{ patient.location }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <a href="https://victorsanchez20.github.io/cliente-citas-terapia/" class="appointment-btn" (click)="scheduleAppointment()">
+          <div class="btn-icon">
+            <i class="fa-regular fa-calendar-plus"></i>
+          </div>
+          <div>
+            <h4>Sacar cita</h4>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let stat of stats">
+        <div class="stat-icon" [class]="stat.colorClass">
+          <i [class]="stat.icon"></i>
+        </div>
+        <div class="stat-data">
+          <h2>{{ stat.value }}</h2>
+          <p>{{ stat.label }}</p>
+        </div>
+        <div class="stat-trend" [class]="stat.trend > 0 ? 'up' : 'neutral'" *ngIf="stat.trend !== undefined">
+          <i class="fa-solid" [class.fa-arrow-trend-up]="stat.trend > 0" [class.fa-minus]="stat.trend === 0"></i>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- NEXT APPOINTMENT -->
+    <div class="section-header">
+      <h3 class="section-title">PRÓXIMA CITA</h3>
+      <button class="link-btn" (click)="viewAllAppointments()">Ver todas →</button>
+    </div>
+
+    <div class="appointment-card">
+      <div class="appointment-date">
+        <h2>{{ nextAppointment.day }}</h2>
+        <p>{{ nextAppointment.month }}</p>
+      </div>
+
+      <div class="appointment-info">
+        <h3>{{ nextAppointment.doctor }}</h3>
+        <p><i class="fa-regular fa-clock"></i> {{ nextAppointment.time }} · {{ nextAppointment.location }}</p>
+        <span class="appt-type">{{ nextAppointment.specialty }}</span>
+      </div>
+
+      <div class="appointment-actions">
+        <button class="btn-reschedule" (click)="reschedule()">
+          <i class="fa-regular fa-calendar"></i> Reagendar
+        </button>
+        <button class="btn-cancel" (click)="cancelAppointment()">
+          <i class="fa-solid fa-xmark"></i> Cancelar
+        </button>
+      </div>
+    </div>
+
+    <!-- MEDICAL HISTORY -->
+    <div class="section-header">
+      <h3 class="section-title">HISTORIAL MÉDICO</h3>
+    </div>
+
+    <!-- Sección historial de documentos (después del hc-section de citas) -->
+    <div class="hc-section">
+      <h3>Historial de consultas</h3>
+      <span style="font-size:13px; color:#94a3b8;">{{ historiasClinicas.length }} registros</span>
+
+      <div class="hc-historial-lista">
+        <div
+          *ngFor="let hc of historiasClinicas"
+          class="hc-historial-item"
+          (click)="abrirModal(hc)">
+
+          <div class="hc-historial-dot"></div>
+
+          <div class="hc-historial-content">
+            <div class="hc-historial-meta">
+              <span class="hc-historial-fecha">{{ hc.fechaRegistro | date:'dd MMM yyyy' }}</span>
+              <span class="hc-historial-responsable">{{ hc.responsable }} · {{ hc.especialidad }}</span>
+            </div>
+            <p class="hc-historial-descripcion">{{ hc.descripcion }}</p>
+            <div class="hc-historial-archivos" *ngIf="hc.archivos.length > 0">
+              <span *ngFor="let a of hc.archivos" class="hc-archivo-tag">
+                {{ a.categoria }}
+              </span>
+            </div>
+          </div>
+          <div class="hc-chev" aria-hidden="true">›</div>
+        </div>
+
+        <p *ngIf="historiasClinicas.length === 0" style="color:#94a3b8; font-size:14px; padding:16px 0;">
+          Sin registros de historia clínica
+        </p>
+      </div>
+    </div>
+
+    <app-modal-hc
+      *ngIf="hcSeleccionada"
+      [hc]="hcSeleccionada"
+      (cerrar)="cerrarModal()">
+    </app-modal-hc>
+
+  </div>

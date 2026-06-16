@@ -1,0 +1,377 @@
+<div class="home-page" (click)="onPageClick($event)">
+
+  <!-- ── NAVBAR ─────────────────────────────────────────────────── -->
+  <nav class="navbar" [class.scrolled]="isScrolled">
+    <div class="nav-inner">
+
+      <div class="nav-logo">
+        <div class="logo-mark">
+          <i class="fa-solid fa-user-doctor"></i>
+        </div>
+        <span>E-sheba</span>
+      </div>
+
+      <ul class="nav-links">
+        <li *ngFor="let link of navLinks">
+          <a [href]="link.href" (click)="scrollTo($event, link.href)">{{ link.label }}</a>
+        </li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="/login" class="btn-outline-nav">Iniciar sesión</a>
+        <a href="/registro" class="btn-primary-nav">Reservar cita</a>
+      </div>
+
+      <button class="burger" (click)="toggleMenu()" [class.open]="menuOpen">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="mobile-menu" [class.open]="menuOpen">
+      <a *ngFor="let link of navLinks" [href]="link.href" (click)="closeMenu()">{{ link.label }}</a>
+      <a href="/login" class="mobile-login">Iniciar sesión</a>
+      <a href="/registro" class="mobile-cta">Reservar cita</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ───────────────────────────────────────────────────── -->
+  <section class="hero" id="inicio">
+
+    <div class="hero-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+
+    <div class="hero-content">
+
+      <div class="hero-eyebrow">
+        <span class="pulse-dot"></span>
+        Atención médica disponible ahora
+      </div>
+
+      <h1 class="hero-title">
+        Tu salud merece<br />
+        <span class="title-highlight">atención experta</span><br />
+        sin esperas
+      </h1>
+
+      <p class="hero-subtitle">
+        Conectamos a miles de pacientes con los mejores especialistas de Lima.
+        Citas presenciales y videoconsultas disponibles hoy.
+      </p>
+    </div>
+
+    <!-- HERO CARD FLOAT -->
+    <div class="hero-visual">
+
+      <div class="hero-card hero-card--next">
+        <div class="hc-icon mint">
+          <i class="fa-regular fa-calendar-check"></i>
+        </div>
+        <div>
+          <p class="hc-label">Próxima cita</p>
+          <p class="hc-value">Hoy · 3:00 PM</p>
+        </div>
+      </div>
+
+      <div class="hero-card hero-card--patients">
+        <div class="hc-avatars">
+          <span *ngFor="let a of ['M','C','R','A']">{{ a }}</span>
+        </div>
+        <div>
+          <p class="hc-value">+1,200</p>
+          <p class="hc-label">Pacientes hoy</p>
+        </div>
+      </div>
+
+      <div class="hero-card hero-card--rating">
+        <div class="hc-stars">
+          <i class="fa-solid fa-star" *ngFor="let s of [1,2,3,4,5]"></i>
+        </div>
+        <p class="hc-value">4.9 / 5.0</p>
+        <p class="hc-label">Satisfacción</p>
+      </div>
+
+      <div class="center-blob">
+        <i class="fa-solid fa-heart-pulse"></i>
+        <span>Siempre activo</span>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ── STATS BAR ──────────────────────────────────────────────── -->
+  <section class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item" *ngFor="let s of globalStats">
+        <h2>{{ s.value }}</h2>
+        <p>{{ s.label }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── URGENCIAS BANNER ───────────────────────────────────────── -->
+  <section class="urgencias-banner">
+    <div class="urgencias-inner">
+      <div class="urgencias-left">
+        <div class="urgencias-icon">
+          <i class="fa-solid fa-truck-medical"></i>
+        </div>
+        <div>
+          <h3>¿Es una emergencia?</h3>
+          <p>Línea de urgencias activa 24 horas, los 7 días de la semana</p>
+        </div>
+      </div>
+      <div class="urgencias-actions">
+        <a href="tel:+51800ESHEBA" class="btn-urgencia">
+          <i class="fa-solid fa-phone"></i>
+          Llamar ahora · 800-374-232
+        </a>
+        <a href="/urgencias" class="btn-urgencia-ghost">
+          Ver protocolo de emergencias
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── HOW IT WORKS ───────────────────────────────────────────── -->
+  <section class="section section--alt" id="como-funciona">
+    <div class="section-inner">
+
+      <div class="section-header-block centered">
+        <div class="eyebrow-chip">Proceso</div>
+        <h2 class="section-h2">Reservar tu cita es<br /><span class="highlight">así de simple</span></h2>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card" *ngFor="let step of steps; let i = index">
+          <div class="step-number">0{{ i + 1 }}</div>
+          <div class="step-icon-wrap" [class]="step.colorClass">
+            <i [class]="step.icon"></i>
+          </div>
+          <h4>{{ step.title }}</h4>
+          <p>{{ step.desc }}</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── DOCTORS ────────────────────────────────────────────────── -->
+  <section class="section" id="doctores">
+    <div class="section-inner">
+
+      <div class="section-header-block">
+        <div class="eyebrow-chip">Nuestro equipo</div>
+        <h2 class="section-h2">
+          Conoce a algunos de<br />
+          <span class="highlight">nuestros especialistas</span>
+        </h2>
+        <p class="section-desc">Más de 100 médicos certificados listos para atenderte con la mayor calidad.</p>
+      </div>
+
+      <div class="doctors-grid">
+        <div class="doctor-card" *ngFor="let doc of doctors">
+
+          <div class="doctor-avatar" [style.background]="doc.bg">
+            <span>{{ doc.initials }}</span>
+            <span class="doc-online" *ngIf="doc.available"></span>
+          </div>
+
+          <div class="doctor-info">
+            <h4>{{ doc.name }}</h4>
+            <p class="doc-specialty">{{ doc.specialty }}</p>
+            <div class="doc-meta">
+              <span><i class="fa-solid fa-star"></i> {{ doc.rating }}</span>
+              <span><i class="fa-regular fa-clock"></i> {{ doc.experience }} años</span>
+            </div>
+          </div>
+
+          <div class="doctor-footer">
+            <span class="doc-avail" [class.available]="doc.available">
+              {{ doc.available ? 'Disponible hoy' : 'Próximo lunes' }}
+            </span>
+            <button class="btn-doc-appt">Agendar</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SERVICES HIGHLIGHT ─────────────────────────────────────── -->
+  <section class="section section--alt" id="servicios">
+    <div class="section-inner">
+
+      <div class="section-header-block centered">
+        <div class="eyebrow-chip">Servicios</div>
+        <h2 class="section-h2">Todo lo que necesitas<br /><span class="highlight">en un solo lugar</span></h2>
+      </div>
+
+      <div class="services-bento">
+
+        <div class="bento-card">
+          <div class="bento-icon mint">
+            <i class="fa-solid fa-flask-vial"></i>
+          </div>
+          <h3>Laboratorio clínico</h3>
+          <p>Resultados en línea en menos de 24 horas.</p>
+          <a href="/laboratorio" class="bento-link">Ver exámenes <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <div class="bento-card">
+          <div class="bento-icon peach">
+            <i class="fa-solid fa-pills"></i>
+          </div>
+          <h3>Farmacia integrada</h3>
+          <p>Recetas digitales y entrega a domicilio en Lima.</p>
+          <a href="/farmacia" class="bento-link">Ver farmacia <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <div class="bento-card">
+          <div class="bento-icon blue">
+            <i class="fa-solid fa-x-ray"></i>
+          </div>
+          <h3>Radiología e imágenes</h3>
+          <p>Ecografías, tomografías y rayos X con entrega digital.</p>
+          <a href="/radiologia" class="bento-link">Agendar <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <div class="bento-card bento-accent">
+          <h3>¿Primera vez?</h3>
+          <p>Tu consulta de orientación médica general no tiene costo.</p>
+          <a href="/registro" class="bento-cta-btn">Empezar gratis</a>
+          <div class="bento-bg-icon">
+            <i class="fa-solid fa-star-of-life"></i>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── TESTIMONIALS ───────────────────────────────────────────── -->
+  <section class="section" id="testimonios">
+    <div class="section-inner">
+
+      <div class="section-header-block centered">
+        <div class="eyebrow-chip">Testimonios</div>
+        <h2 class="section-h2">Lo que dicen<br /><span class="highlight">nuestros pacientes</span></h2>
+      </div>
+
+      <div class="testimonials-track">
+        <div
+          class="testimonial-card"
+          *ngFor="let t of testimonials"
+          [class.featured]="t.featured">
+
+          <div class="test-stars">
+            <i class="fa-solid fa-star" *ngFor="let s of getStars(t.rating)"></i>
+          </div>
+          <p class="test-quote">"{{ t.quote }}"</p>
+          <div class="test-author">
+            <div class="test-avatar" [style.background]="t.bg">{{ t.initials }}</div>
+            <div>
+              <p class="test-name">{{ t.name }}</p>
+              <p class="test-specialty">{{ t.specialty }}</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── HEALTH TIPS ────────────────────────────────────────────── -->
+  <section class="section section--alt" id="blog">
+    <div class="section-inner">
+
+      <div class="section-header-block">
+        <div class="eyebrow-chip">Blog de salud</div>
+        <h2 class="section-h2">Consejos para<br /><span class="highlight">vivir mejor</span></h2>
+      </div>
+
+      <div class="tips-grid">
+        <div class="tip-card tip-featured">
+          <div class="tip-tag">{{ tips[0].tag }}</div>
+          <h3>{{ tips[0].title }}</h3>
+          <p>{{ tips[0].excerpt }}</p>
+          <div class="tip-meta">
+            <span>{{ tips[0].author }}</span>
+            <span>{{ tips[0].readTime }} min lectura</span>
+          </div>
+        </div>
+        <div class="tip-card" *ngFor="let tip of tips.slice(1)">
+          <div class="tip-tag">{{ tip.tag }}</div>
+          <h3>{{ tip.title }}</h3>
+          <p>{{ tip.excerpt }}</p>
+          <div class="tip-meta">
+            <span>{{ tip.author }}</span>
+            <span>{{ tip.readTime }} min lectura</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── CTA FINAL ──────────────────────────────────────────────── -->
+  <section class="cta-final">
+    <div class="cta-inner">
+      <div class="cta-bg-shape"></div>
+      <h2>¿Listo para cuidar<br />tu salud hoy?</h2>
+      <p>Únete a más de un millón de pacientes que ya confían en E-sheba.</p>
+      <div class="cta-btns">
+        <a href="/registro" class="btn-cta-main">Crear cuenta gratis</a>
+        <a href="/contacto" class="btn-cta-ghost">Hablar con un asesor</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-inner">
+
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <i class="fa-solid fa-user-doctor"></i>
+          <span>E-sheba</span>
+        </div>
+        <p>Cuidando tu salud con tecnología y calidez humana desde 2018.</p>
+        <div class="footer-socials">
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col" *ngFor="let col of footerColumns">
+        <h5>{{ col.title }}</h5>
+        <ul>
+          <li *ngFor="let link of col.links">
+            <a [href]="link.href">{{ link.label }}</a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 E-sheba · Todos los derechos reservados</p>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidad</a>
+        <a href="#">Términos</a>
+        <a href="#">Cookies</a>
+      </div>
+    </div>
+  </footer>
+
+</div>

@@ -1,6 +1,5 @@
 <div class="perfil-page">
 
-  <!-- NAVBAR -->
   <nav class="topbar">
     <div class="logo">
       <i class="fa-solid fa-user-doctor logo-icon"></i>
@@ -14,7 +13,6 @@
         <i class="fa-regular fa-bell"></i>
         <span class="notification-dot" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
 
-        <!-- Notification dropdown -->
         <div class="notif-dropdown" *ngIf="showNotifications" (click)="$event.stopPropagation()">
           <p class="notif-title">Notificaciones</p>
           <div class="notif-item" *ngFor="let n of notifications">
@@ -33,17 +31,14 @@
     </div>
   </nav>
 
-  <!-- CONTENT -->
   <div class="perfil-content">
 
     <div class="section-header">
       <h3 class="section-title">MI PERFIL</h3>
     </div>
 
-    <!-- PROFILE CARD -->
     <div class="profile-card">
       <div class="profile-left">
-
         <div class="profile-image">
           <span class="avatar-initials">{{ patient.firstName[0] }}{{ patient.lastName[0] }}</span>
           <span class="online-dot" [class.offline]="!patient.isOnline"></span>
@@ -53,7 +48,8 @@
           <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
 
           <p class="patient-id">
-            <span class="id-badge">{{ patient.id }}</span>
+            <span class="id-badge">HC: {{ patient.id }}</span>
+            <span class="id-badge">DNI: {{ patient.dni }}</span>
             <span class="status-pill" [class.active]="patient.active">
               {{ patient.active ? 'Activo' : 'Inactivo' }}
             </span>
@@ -68,7 +64,7 @@
       </div>
 
       <div class="profile-actions">
-        <a href="https://victorsanchez20.github.io/cliente-citas-terapia/" class="appointment-btn" (click)="scheduleAppointment()">
+        <a class="appointment-btn" (click)="sacarCita()">
           <div class="btn-icon">
             <i class="fa-regular fa-calendar-plus"></i>
           </div>
@@ -79,7 +75,6 @@
       </div>
     </div>
 
-    <!-- STATS GRID -->
     <div class="stats-grid">
       <div class="stat-card" *ngFor="let stat of stats">
         <div class="stat-icon" [class]="stat.colorClass">
@@ -89,59 +84,98 @@
           <h2>{{ stat.value }}</h2>
           <p>{{ stat.label }}</p>
         </div>
-        <div class="stat-trend" [class]="stat.trend > 0 ? 'up' : 'neutral'" *ngIf="stat.trend !== undefined">
-          <i class="fa-solid" [class.fa-arrow-trend-up]="stat.trend > 0" [class.fa-minus]="stat.trend === 0"></i>
+        <div class="stat-trend" [class]="stat.trend ? 'up' : 'neutral'" *ngIf="stat.trend !== undefined">
+          <i class="fa-solid" [class.fa-arrow-trend-up]="stat.trend" [class.fa-minus]="!stat.trend"></i>
         </div>
       </div>
     </div>
 
-
-    <!-- NEXT APPOINTMENT -->
-    <div class="section-header">
+    <div class="section-header" *ngIf="proximaCita">
       <h3 class="section-title">PRÓXIMA CITA</h3>
-      <button class="link-btn" (click)="viewAllAppointments()">Ver todas →</button>
     </div>
 
-    <div class="appointment-card">
+    <div class="appointment-card" *ngIf="proximaCita">
       <div class="appointment-date">
-        <h2>{{ nextAppointment.day }}</h2>
-        <p>{{ nextAppointment.month }}</p>
+        <h2>{{ proximaCita.fecha | date:'dd' }}</h2>
+        <p>{{ proximaCita.fecha | date:'MMM' | uppercase }}</p>
       </div>
 
       <div class="appointment-info">
-        <h3>{{ nextAppointment.doctor }}</h3>
-        <p><i class="fa-regular fa-clock"></i> {{ nextAppointment.time }} · {{ nextAppointment.location }}</p>
-        <span class="appt-type">{{ nextAppointment.specialty }}</span>
-      </div>
-
-      <div class="appointment-actions">
-        <button class="btn-reschedule" (click)="reschedule()">
-          <i class="fa-regular fa-calendar"></i> Reagendar
-        </button>
-        <button class="btn-cancel" (click)="cancelAppointment()">
-          <i class="fa-solid fa-xmark"></i> Cancelar
-        </button>
+        <h3>{{ proximaCita.especialidad || 'Consulta' }}</h3>
+        <p><i class="fa-regular fa-clock"></i> {{ proximaCita.hora }} · {{ proximaCita.doctor }}</p>
+        <span class="appt-type">{{ proximaCita.especialidad || 'General' }}</span>
       </div>
     </div>
 
-    <!-- MEDICAL HISTORY -->
+    <div class="section-header" *ngIf="citas.length > 0">
+      <h3 class="section-title">MIS CITAS</h3>
+    </div>
+
+    <div class="citas-card" *ngIf="citas.length > 0">
+      <table class="citas-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Doctor</th>
+            <th>Especialidad</th>
+            <th>Sesiones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let c of citas; let i = index">
+            <tr (click)="toggleCita(i)" class="cita-header-row">
+              <td class="cita-arrow">{{ c.open ? '▼' : '▶' }}</td>
+              <td>{{ c.id_doctor?.nombre || '—' }}</td>
+              <td>{{ c.id_diagnostico?.nombre || '—' }}</td>
+              <td>{{ c.sesiones.length }}</td>
+            </tr>
+            <tr *ngIf="c.open" class="cita-sesiones-row">
+              <td colspan="4">
+                <table class="sesiones-subtable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Fecha</th>
+                      <th>Hora</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let s of c.sesiones">
+                      <td>{{ s.numero_sesion }}°</td>
+                      <td>{{ s.fecha | date:'dd/MM/yyyy' }}</td>
+                      <td>{{ s.fecha | date:'HH:mm' }}</td>
+                      <td>
+                        <span class="estado-badge" [class.registrada]="s.estado === 1"
+                              [class.completada]="s.estado === 2"
+                              [class.cancelada]="s.estado === 3">
+                          {{ estadoLabel(s.estado) }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </ng-container>
+          <tr *ngIf="citas.length === 0">
+            <td colspan="4" class="empty-cell">Sin citas registradas</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="section-header">
       <h3 class="section-title">HISTORIAL MÉDICO</h3>
     </div>
 
-    <!-- Sección historial de documentos (después del hc-section de citas) -->
     <div class="hc-section">
       <h3>Historial de consultas</h3>
-      <span style="font-size:13px; color:#94a3b8;">{{ historiasClinicas.length }} registros</span>
+      <span>{{ historiasClinicas.length }} registros</span>
 
       <div class="hc-historial-lista">
-        <div
-          *ngFor="let hc of historiasClinicas"
-          class="hc-historial-item"
-          (click)="abrirModal(hc)">
-
+        <div *ngFor="let hc of historiasClinicas" class="hc-historial-item" (click)="abrirModal(hc)">
           <div class="hc-historial-dot"></div>
-
           <div class="hc-historial-content">
             <div class="hc-historial-meta">
               <span class="hc-historial-fecha">{{ hc.fechaRegistro | date:'dd MMM yyyy' }}</span>
@@ -149,15 +183,13 @@
             </div>
             <p class="hc-historial-descripcion">{{ hc.descripcion }}</p>
             <div class="hc-historial-archivos" *ngIf="hc.archivos.length > 0">
-              <span *ngFor="let a of hc.archivos" class="hc-archivo-tag">
-                {{ a.categoria }}
-              </span>
+              <span *ngFor="let a of hc.archivos" class="hc-archivo-tag">{{ a.categoria }}</span>
             </div>
           </div>
-          <div class="hc-chev" aria-hidden="true">›</div>
+          <div class="hc-chev">›</div>
         </div>
 
-        <p *ngIf="historiasClinicas.length === 0" style="color:#94a3b8; font-size:14px; padding:16px 0;">
+        <p *ngIf="historiasClinicas.length === 0" class="hc-empty">
           Sin registros de historia clínica
         </p>
       </div>
@@ -170,3 +202,4 @@
     </app-modal-hc>
 
   </div>
+</div>

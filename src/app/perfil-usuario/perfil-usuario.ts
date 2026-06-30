@@ -5,6 +5,9 @@ import { AuthService } from '../services/auth.service';
 import { Paciente } from '../../models/paciente.model';
 import { HistoriaClinicaResponse, HistorialClinicaService } from '../services/historial-clinica.service';
 import { ModalHcComponent } from '../components/modal-hc/modal-hc';
+import { CitaService, Cita } from '../services/cita.service';
+import { SesionService, Sesion } from '../services/sesion.service';
+import Swal from 'sweetalert2';
 
 export interface StatCard {
   icon: string;
@@ -14,53 +17,10 @@ export interface StatCard {
   trend?: number;
 }
 
-export interface Vital {
-  label: string;
-  value: string;
-  unit: string;
-  percent: number;
-  status: 'good' | 'warning' | 'danger';
-  statusLabel: string;
-}
-
-export interface Appointment {
-  day: number;
-  month: string;
-  doctor: string;
-  specialty: string;
-  time: string;
-  location: string;
-}
-
-export interface Medication {
-  name: string;
-  dose: string;
-  frequency: string;
-  daysLeft: number;
-}
-
-export interface HistoryItem {
-  id: number;
-  title: string;
-  doctor: string;
-  specialty: string;
-  clinic: string;
-  date: string;
-  statusLabel: string;
-  statusClass: string;
-  colorClass: string;
-  category: string;
-}
-
 export interface Notification {
   message: string;
   time: string;
   type: 'info' | 'success' | 'warning';
-}
-
-export interface HistoryFilter {
-  label: string;
-  value: string;
 }
 
 function getAge(birthDate: string): number {
@@ -72,6 +32,15 @@ function getAge(birthDate: string): number {
   return age;
 }
 
+function estadoLabel(e: number): string {
+  switch (e) {
+    case 1: return 'Registrada';
+    case 2: return 'Completada';
+    case 3: return 'Cancelada';
+    default: return '—';
+  }
+}
+
 @Component({
   selector: 'app-perfil-usuario',
   imports: [CommonModule, ModalHcComponent],
@@ -81,10 +50,8 @@ function getAge(birthDate: string): number {
 export class PerfilUsuario implements OnInit {
 
   greeting = '';
-  lastUpdate = '18 May 2025, 09:42';
   showNotifications = false;
   unreadNotifications = 2;
-  activeFilter = 'all';
 
   historiasClinicas: HistoriaClinicaResponse[] = [];
   hcSeleccionada: HistoriaClinicaResponse | null = null;
@@ -96,10 +63,9 @@ export class PerfilUsuario implements OnInit {
     firstName: '',
     lastName: '',
     age: 0,
-    bloodType: 'O+',
     phone: '',
     location: '',
-    allergies: ['Penicilina'],
+    dni: '',
     active: true,
     isOnline: true,
   };
@@ -108,95 +74,42 @@ export class PerfilUsuario implements OnInit {
     {
       icon: 'fa-regular fa-file-lines',
       value: 0,
-      label: 'Consultas totales',
+      label: 'Consultas',
       colorClass: 'blue',
-      trend: 1,
-    },
-    {
-      icon: 'fa-solid fa-pills',
-      value: 0,
-      label: 'Medicamentos activos',
-      colorClass: 'mint',
       trend: 0,
     },
     {
       icon: 'fa-regular fa-calendar-check',
-      value: 0,
+      value: '—',
       label: 'Próxima cita',
       colorClass: 'lav',
     },
-  ];
-
-
-
-
-  nextAppointment: Appointment = {
-    day: 22,
-    month: 'MAY',
-    doctor: 'Dr. Ramírez — Cardiología',
-    specialty: 'Cardiología',
-    time: '10:30 AM',
-    location: 'Clínica Central, Lima',
-  };
-
-  medications: Medication[] = [
     {
-      name: 'Atorvastatina',
-      dose: '20 mg',
-      frequency: 'Diario · noche',
-      daysLeft: 12,
-    },
-    {
-      name: 'Metformina',
-      dose: '500 mg',
-      frequency: 'Dos veces al día',
-      daysLeft: 5,
-    },
-    {
-      name: 'Losartán',
-      dose: '50 mg',
-      frequency: 'Diario · mañana',
-      daysLeft: 20,
+      icon: 'fa-solid fa-stethoscope',
+      value: 0,
+      label: 'Diagnósticos',
+      colorClass: 'mint',
     },
   ];
+
+  citas: (Cita & { sesiones: Sesion[]; open?: boolean })[] = [];
+  tieneCitaRegistrada = false;
+  proximaCita: { fecha: string; hora: string; doctor: string; especialidad: string } | null = null;
 
   notifications: Notification[] = [
     {
-      message: 'Cita confirmada: Dr. Ramírez 22 May',
-      time: 'Hace 1 hora',
-      type: 'success',
-    },
-    {
-      message: 'Resultado de laboratorio disponible',
-      time: 'Hace 3 horas',
+      message: 'Bienvenido a tu perfil de salud',
+      time: 'Ahora',
       type: 'info',
     },
-    {
-      message: 'Medicamento próximo a vencer: 5 días',
-      time: 'Ayer, 18:30',
-      type: 'warning',
-    },
   ];
-
-  historyFilters: HistoryFilter[] = [
-    { label: 'Todos', value: 'all' },
-    { label: 'Completados', value: 'completed' },
-    { label: 'Seguimiento', value: 'followup' },
-    { label: 'En revisión', value: 'review' },
-  ];
-
-  history: HistoryItem[] = [];
-
-
-  get filteredHistory(): HistoryItem[] {
-    if (this.activeFilter === 'all') return this.history;
-    return this.history.filter((h) => h.category === this.activeFilter);
-  }
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private historiaClinicaService: HistorialClinicaService,
+    private citaService: CitaService,
+    private sesionService: SesionService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -209,21 +122,125 @@ export class PerfilUsuario implements OnInit {
     }
     this.patientData = patient;
     this.patient = {
-      id: 'HC: ' + (patient.hc || '—'),
+      id: patient.hc || '—',
       firstName: patient.nombre?.split(' ')[0] || '',
       lastName: (patient.apaterno || '') + ' ' + (patient.amaterno || ''),
       age: patient.nacimiento ? getAge(patient.nacimiento) : 0,
-      bloodType: 'O+',
       phone: patient.telefono || '—',
       location: patient.direccion || '—',
-      allergies: ['Penicilina'],
+      dni: patient.dni || '',
       active: true,
       isOnline: true,
     };
 
     if (patient.id) {
-      this.cargarHistoriasClinicas(patient.id);
+      this.cargarDatos(patient.id);
     }
+  }
+
+  cargarDatos(pacienteId: number) {
+    this.cargarHistoriasClinicas(pacienteId);
+    this.cargarCitas(pacienteId);
+  }
+
+  cargarHistoriasClinicas(pacienteId: number) {
+    this.historiaClinicaService.obtenerPorPaciente(pacienteId).subscribe({
+      next: (data) => {
+        this.historiasClinicas = data;
+        this.stats[0].value = data.length;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  cargarCitas(idPaciente: number) {
+    this.citaService.listarPorPaciente(idPaciente).subscribe({
+      next: (data) => {
+        this.citas = data.map(c => ({ ...c, sesiones: [], open: false }));
+
+        this.citas.forEach((cita, i) => {
+          this.sesionService.listarPorCita(cita.id).subscribe({
+            next: (sesiones) => {
+              this.citas[i].sesiones = sesiones;
+
+              if (sesiones.some(s => s.estado === 1)) {
+                this.tieneCitaRegistrada = true;
+              }
+
+              this.actualizarProximaCita();
+              this.cdr.detectChanges();
+            },
+            error: (err) => console.error(err)
+          });
+        });
+
+        this.stats[1].value = data.length > 0 ? data.length : '—';
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  actualizarProximaCita() {
+    const ahora = new Date();
+    let masCercana: { fecha: string; hora: string; doctor: string; especialidad: string } | null = null;
+
+    for (const c of this.citas) {
+      for (const s of c.sesiones) {
+        const fechaSesion = new Date(s.fecha);
+        if (fechaSesion > ahora && s.estado !== 3) {
+          if (!masCercana || fechaSesion < new Date(masCercana.fecha)) {
+            masCercana = {
+              fecha: s.fecha,
+              hora: fechaSesion.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+              doctor: c.id_doctor?.nombre || '—',
+              especialidad: c.id_diagnostico?.nombre || '—',
+            };
+          }
+        }
+      }
+    }
+
+    this.proximaCita = masCercana;
+
+    if (masCercana) {
+      this.stats[1] = {
+        icon: 'fa-regular fa-calendar-check',
+        value: new Date(masCercana.fecha).getDate().toString(),
+        label: new Date(masCercana.fecha).toLocaleDateString('es-PE', { month: 'short' }),
+        colorClass: 'lav',
+      };
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  toggleCita(index: number) {
+    this.citas[index].open = !this.citas[index].open;
+  }
+
+  abrirModal(hc: HistoriaClinicaResponse) {
+    this.hcSeleccionada = hc;
+  }
+
+  cerrarModal() {
+    this.hcSeleccionada = null;
+  }
+
+  sacarCita() {
+    if (this.tieneCitaRegistrada) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cita activa',
+        text: 'Ya tiene una cita registrada. Complete o cancele esa cita antes de solicitar una nueva.',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#1D6FD1',
+      });
+      return;
+    }
+
+    window.open('https://victorsanchez20.github.io/cliente-citas-terapia/', '_blank');
   }
 
   setGreeting(): void {
@@ -238,38 +255,7 @@ export class PerfilUsuario implements OnInit {
     if (this.showNotifications) this.unreadNotifications = 0;
   }
 
-  setFilter(value: string): void {
-    this.activeFilter = value;
-  }
-
-  scheduleAppointment(): void {
-    console.log('Navigate to: /citas/nueva');
-  }
-
-  editProfile(): void {
-    console.log('Navigate to: /perfil/editar');
-  }
-
-  reschedule(): void {
-    console.log('Reagendar cita:', this.nextAppointment);
-  }
-
-  cancelAppointment(): void {
-    const confirmed = confirm('¿Seguro que deseas cancelar esta cita?');
-    if (confirmed) console.log('Cita cancelada');
-  }
-
-  viewAllAppointments(): void {
-    console.log('Navigate to: /citas');
-  }
-
-  viewHistoryDetail(item: HistoryItem): void {
-    console.log('Ver detalle historial:', item.id);
-  }
-
-  downloadPDF(): void {
-    console.log('Generando PDF del historial médico...');
-  }
+  protected readonly estadoLabel = estadoLabel;
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
@@ -277,24 +263,5 @@ export class PerfilUsuario implements OnInit {
     if (!target.closest('.icon-btn')) {
       this.showNotifications = false;
     }
-  }
-
-
-  cargarHistoriasClinicas(pacienteId: number) {
-    this.historiaClinicaService.obtenerPorPaciente(pacienteId).subscribe({
-      next: (data) => {
-        this.historiasClinicas = data;
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error(err)
-    });
-  }
-
-  abrirModal(hc: HistoriaClinicaResponse) {
-    this.hcSeleccionada = hc;
-  }
-
-  cerrarModal() {
-    this.hcSeleccionada = null;
   }
 }

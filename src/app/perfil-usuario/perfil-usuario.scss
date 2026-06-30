@@ -947,6 +947,108 @@ $shadow-btn:  0 4px 16px rgba(29, 111, 209, 0.28);
   }
 }
 
+// ── CITAS CARD ─────────────────────────────────────────────────────────────
+.citas-card {
+  background: $white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.citas-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 14px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $text-muted;
+    text-align: left;
+    background: #F9FAFB;
+    border-bottom: 0.5px solid $border;
+  }
+
+  td {
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: $text-dark;
+    border-bottom: 0.5px solid $border;
+  }
+}
+
+.cita-header-row {
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover { background: #FAFBFF; }
+
+  .cita-arrow {
+    width: 20px;
+    font-size: 10px;
+    color: $text-muted;
+  }
+}
+
+.cita-sesiones-row {
+  background: #F8FAFC;
+
+  td { padding: 0; }
+}
+
+.sesiones-subtable {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 10px 16px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $text-muted;
+    text-align: left;
+    background: #F1F5F9;
+  }
+
+  td {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: $text-dark;
+    border-bottom: 0.5px solid rgba(0,0,0,0.04);
+  }
+
+  tr:last-child td { border-bottom: none; }
+}
+
+.estado-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+
+  &.registrada { background: $blue-pale; color: $blue-dark; }
+  &.completada { background: #DCFCE7; color: #15803D; }
+  &.cancelada  { background: #FEE2E2; color: #B91C1C; }
+}
+
+.empty-cell {
+  text-align: center;
+  color: $text-muted;
+  padding: 24px 16px;
+  font-size: 13px;
+}
+
+.hc-empty {
+  color: $text-muted;
+  font-size: 13px;
+  padding: 16px 0;
+}
+
 // ── PDF BUTTON ─────────────────────────────────────────────────────────────
 .pdf-btn {
   display: flex;

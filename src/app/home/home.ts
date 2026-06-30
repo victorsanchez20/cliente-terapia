@@ -30,7 +30,6 @@ export class Home implements OnInit, OnDestroy {
 
   navLinks: NavLink[] = [
     { label: 'Inicio',          href: '#inicio'         },
-    { label: 'Especialidades',  href: '#especialidades' },
     { label: 'Cómo funciona',   href: '#como-funciona'  },
     { label: 'Doctores',        href: '#doctores'       },
     { label: 'Servicios',       href: '#servicios'      },
@@ -174,16 +173,6 @@ export class Home implements OnInit, OnDestroy {
         { label: 'Farmacia',           href: '/farmacia'      },
         { label: 'Radiología',         href: '/radiologia'    },
         { label: 'Urgencias',          href: '/urgencias'     },
-      ],
-    },
-    {
-      title: 'Especialidades',
-      links: [
-        { label: 'Cardiología',        href: '#' },
-        { label: 'Pediatría',          href: '#' },
-        { label: 'Neurología',         href: '#' },
-        { label: 'Psicología',         href: '#' },
-        { label: 'Ver todas',          href: '/especialidades' },
       ],
     },
     {
